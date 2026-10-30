@@ -1,0 +1,48 @@
+name: CI - Loja Virtual
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: python:3.10
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install matplotlib
+      - run: python relogio.py
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    container: python:3.10
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install matplotlib
+      - run: python plot_simples_grafico.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: grafico
+          path: grafico.png
+
+  notificar_sucesso:
+    needs: [build, test]
+    if: success()
+    runs-on: ubuntu-latest
+    env:
+      CI_COMMIT_SHORT_SHA: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: sh notificacaoSucesso.sh
+
+  notificar_falha:
+    needs: [build, test]
+    if: failure()
+    runs-on: ubuntu-latest
+    env:
+      CI_COMMIT_SHORT_SHA: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: sh notificacaoFalha.sh
