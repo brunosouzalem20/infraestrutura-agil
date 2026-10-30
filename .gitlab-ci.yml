@@ -1,0 +1,33 @@
+image: python:3.10
+
+stages:
+  - build
+  - test
+  - notify
+
+build:
+  stage: build
+  script:
+    - pip install matplotlib
+    - python relogio.py
+
+test:
+  stage: test
+  script:
+    - pip install matplotlib
+    - python plot_simples_grafico.py
+  artifacts:
+    paths:
+      - grafico.png
+
+notificar_sucesso:
+  stage: notify
+  when: on_success
+  script:
+    - sh notificacaoSucesso.sh
+
+notificar_falha:
+  stage: notify
+  when: on_failure
+  script:
+    - sh notificacaoFalha.sh
